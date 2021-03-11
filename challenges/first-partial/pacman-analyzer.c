@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <fcntl.h>
-#define REPORT_FILE "packages_report.txt"
+#include <errno.h>
+char *  REPORT_FILE  = "packages_report.txt";
 #define LENGTH 100000
 void analizeLog(char *logFile, char *report);
 void analizarLinea(char *line, int length, int currentPackage);
@@ -334,6 +336,23 @@ int main(int argc, char **argv) {
 	printf("Usage:./pacman-analizer.o \n");
 	return 1;
     }
+    
+    if(argc >= 5){
+        printf("parametro %s\n", REPORT_FILE);
+        REPORT_FILE = argv[4];
+    }else{
+        printf("Error not enough parameters\n ");
+        return 0;
+    }
+
+    
+    struct stat buffer;
+    int exist = stat(argv[2],&buffer);
+    
+    if(exist != 0){
+        printf("No input file was found\n ");
+        return 0;
+    }    
 
     analizeLog(argv[2], REPORT_FILE);
 
@@ -369,26 +388,7 @@ void analizeLog(char *logFile, char *report) {
         currentPackage++;
 
     }
-    //    printf("Total paquetes %d\n", _TotalInstalledPackages);
-            
-    //    printf("Total paquetes instalados actualmente %d\n", _TotalCurrentInstalled);
 
-    //    printf("_PACMAN_Count %d\n",_PACMAN_Count);
-            
-    //    printf("_ALPM_Count %d\n",_ALPM_Count);
-
-    //    printf("_ALPM_SCRIPTTLETCount %d\n",_ALPM_SCRIPTTLETCount);
-
-    //printf("año temporal %s\n", _OldestPackageFecha);
-    //traversePaquetes();
-    
-    
-
-    //printf("primero %s",packageArray[1] ->Name);
-
-    
-    
-    //printf("Newest package fecha: %s\n",_NewestPackageFecha);
    
     printf("Report is generated at: [%s]\n", report);
     fclose(fp);
@@ -424,7 +424,7 @@ void analizarLinea(char *line, int length, int currentPackage){
         result[i] = NULL;
     }
     
-   
+ 
     /* get the first token */
     token = strtok(line, s);
 
@@ -441,6 +441,94 @@ void analizarLinea(char *line, int length, int currentPackage){
     }
 
 
+
+    char * hora = strdup(result[0]);
+    char * fecha = strdup(result[0]);
+    int type2 = 0;
+  //  char *ptr;
+    char fechaChida[15];
+    char horaChida[15];
+    for (int i = 0; i < 15; i++)
+    {
+        fechaChida[i] = '\0';
+    }
+    
+    
+    for (int i = 0; i < 15; i++)
+    {
+        horaChida[i] = '\0';
+    }
+    
+    char * tempFecha;
+    char * tempHora;
+    char * tempType;
+    char * tempInstruction;
+    char * tempNombre;
+
+
+    char * temporalhora = (char *) malloc(50);
+    char * horatemporal = strdup(hora);
+    char * horatemporal2 = strdup(hora);
+
+    for (int i = 0; i < 20; i++)
+    {
+        if(hora[i] == 'T'){
+
+            for (int j = 0; j < 11; j++)
+            {
+               fechaChida[j] = horatemporal[j];
+            }
+            tempFecha = strdup(fechaChida);
+
+            int x = 0;
+
+            for (int j = 12; j < 17; j++)
+            {  
+               horaChida[x] = horatemporal2[j];
+               x++;
+            }
+            horaChida[x] = ']';
+            //printf("hora chida%s\n",horaChida);
+            tempHora =  strdup(horaChida);
+           // printf("hora chida%s\n",result[1]);
+
+            type2 = 1;
+
+
+
+
+                
+
+               
+            
+        }
+    }
+
+
+                
+    if(type2 ==1){
+       
+            if( result[4] == NULL){
+                return;
+            }
+            tempType = strdup(result[1]);
+            tempInstruction = strdup(result[2]);
+            tempNombre = strdup(result[3]);
+
+            result[0] = strdup(tempFecha);
+            result[1] = strdup(tempHora);
+            result[2] = strdup(tempType);
+            result[3] = strdup(tempInstruction);
+            result[4] = strdup(tempNombre);
+
+
+    }else{
+       
+
+    }
+      
+
+            
     
             if(strcmp(result[2],"[PACMAN]") == 0){
                 _PACMAN_Count++;
@@ -456,6 +544,10 @@ void analizarLinea(char *line, int length, int currentPackage){
 
     if(strcmp(result[3],"upgraded") == 0 ||strcmp(result[3],"installed") == 0 || strcmp(result[3],"removed") == 0 ){
        
+
+   
+
+
         //Inicializamos el nombre del paquete
         
         
@@ -572,23 +664,7 @@ void analizarLinea(char *line, int length, int currentPackage){
             //sí lo es entonces lo marca como newest u oldest según sea
 
             oldest(otroexample,nombre);
-  //          _OldestPackageName
-  //          _NewestPackageName
 
-            //Añade el paquete a los paquetes sin upgrades dado que se acaba de añadir
-  //          _PackagesWithNoUpgradesList
-
-         /*   if(strcmp(tipo,"[PACMAN]") == 0){
-                _PACMAN_Count++;
-            }
-            
-            if(strcmp(tipo,"[ALPM]") == 0){
-                _ALPM_Count++;
-            }
-            
-            if(strcmp(tipo,"[ALPM-SCRIPTLET]") == 0){
-                _ALPM_SCRIPTTLETCount++;
-            }*/
                     
             struct package* newPackage = (struct package*) malloc(sizeof(struct package));
 
@@ -707,9 +783,7 @@ void analizarLinea(char *line, int length, int currentPackage){
         
     }
 
-        
-   // printf("AQUII");
-    
+
 
     
 
@@ -1083,11 +1157,5 @@ void separarHora(char* hora, int esPrincipal){
             _NewestPackageMinuto = atoi(result[1]);
         }
         
-        
-
-        
-            
-        
-
-    
+  
 }
